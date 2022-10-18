@@ -1,6 +1,5 @@
 use std::{
     path::Path,
-    sync::{Arc, RwLock},
 };
 
 use anyhow::Context;
@@ -25,24 +24,28 @@ impl ConsoleContext {
 
 #[derive(Clone)]
 pub(crate) struct ConsoleHandler {
-    wasm_store: Arc<RwLock<Store<ConsoleContext>>>,
-    exec: Arc<console::Console<ConsoleContext>>,
+    name: String,
+    wasm: Vec<u8>,
 }
 
 impl ConsoleHandler {
     pub(crate) fn load(wasm_path: &Path) -> anyhow::Result<Self> {
-        let name = wasm_path.file_stem().and_then(|s| s.to_str()).unwrap_or("mystery-file");
+        let name = wasm_path.file_stem().and_then(|s| s.to_str()).unwrap_or("mystery-file").to_owned();
         let wasm = std::fs::read(&wasm_path).with_context(|| {
             format!("Failed loading console handler from {}", wasm_path.display())
         })?;
+        Ok(Self { name, wasm })
+    }
 
+    pub(crate) fn handle_input(&self, input: &str) -> anyhow::Result<String> {
+        let name = &self.name;
         let ctx = ConsoleContext::new();
         let engine = Engine::default();
         let mut store = Store::new(&engine, ctx);
         let mut linker = Linker::new(&engine);
         wasmtime_wasi::add_to_linker(&mut linker, |ctx: &mut ConsoleContext| &mut ctx.wasi)
             .with_context(|| format!("Setting up WASI for console handler {}", name))?;
-        let module = Module::new(&engine, &wasm)
+        let module = Module::new(&engine, &self.wasm)
             .with_context(|| format!("Creating Wasm module for console handler {}", name))?;
         let instance = linker
             .instantiate(&mut store, &module)
@@ -50,20 +53,8 @@ impl ConsoleHandler {
         let handler_exec =
             console::Console::new(&mut store, &instance, |ctx| &mut ctx.data)
                 .with_context(|| format!("Loading Wasm executor for console handler {}", name))?;
-
-        Ok(Self {
-            wasm_store: Arc::new(RwLock::new(store)),
-            exec: Arc::new(handler_exec),
-        })
-    }
-
-    pub(crate) fn handle_input(&self, input: &str) -> String {
-        let mut store = self
-            .wasm_store
-            .write()
-            .unwrap();
-        let response = self.exec.handle_console_input(&mut *store, input).unwrap();
-        response
+        let response = handler_exec.handle_console_input(&mut store, input).unwrap();
+        Ok(response)
     }
 }
 

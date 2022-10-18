@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project=".\build\WasmDayDotnet.props" />
+  <Import Project=".\build\WasmDayDotnet.targets" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>WasmDayDotnet</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wasi.Sdk" Version="0.1.1" />
+  </ItemGroup>
+
+  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_PackageFiles Include="build\**" BuildAction="Content" PackagePath="build" />
+      <_PackageFiles Include="native\**" BuildAction="Content" PackagePath="native" />
+    </ItemGroup>
+  </Target>
+
+</Project>

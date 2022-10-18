@@ -12,6 +12,6 @@ fn main() {
         let mut input = String::new();
         std::io::stdin().read_line(&mut input).unwrap();
         let response = handler.handle_input(input.trim());
-        println!("{}", response);
+        println!("{}", response.unwrap());
     }
 }
