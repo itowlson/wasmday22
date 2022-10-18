@@ -1,0 +1,13 @@
+// This service will be provided by the host
+
+enum animal-type {
+    cat,
+    dog,
+}
+
+variant request {
+    joke,
+    animal-fact(animal-type),
+}
+
+get-random-thing: func(req: random-thing-request) -> expected<string, error

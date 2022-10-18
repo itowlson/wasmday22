@@ -1,0 +1,3 @@
+// The host will call this export from the guest
+
+handle-console-input: func(line: string) -> string
