@@ -10,4 +10,10 @@ variant request {
     animal-fact(animal-type),
 }
 
-get-random-thing: func(req: random-thing-request) -> expected<string, error
+variant error {
+    network(string),
+    service(u16),
+    response,
+}
+
+get-random-thing: func(req: request) -> expected<string, error>

@@ -1,6 +1,7 @@
 use std::io::Write;
 
 mod console;
+mod services;
 
 fn main() {
     let wasm_path_str = std::env::args().nth(1).expect("must provide Wasm module path");

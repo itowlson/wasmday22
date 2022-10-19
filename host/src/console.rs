@@ -10,6 +10,7 @@ wit_bindgen_wasmtime::import!({paths: ["../wit/console.wit"]});
 
 struct ConsoleContext {
     wasi: WasiCtx,
+    random_thing: crate::services::RandomThing,
     data: console::ConsoleData,
 }
 
@@ -17,6 +18,7 @@ impl ConsoleContext {
     fn new() -> Self {
         Self {
             wasi: WasiCtxBuilder::new().build(),
+            random_thing: crate::services::RandomThing,
             data: console::ConsoleData {},
         }
     }
@@ -39,12 +41,16 @@ impl ConsoleHandler {
 
     pub(crate) fn handle_input(&self, input: &str) -> anyhow::Result<String> {
         let name = &self.name;
+
         let ctx = ConsoleContext::new();
         let engine = Engine::default();
         let mut store = Store::new(&engine, ctx);
         let mut linker = Linker::new(&engine);
+
         wasmtime_wasi::add_to_linker(&mut linker, |ctx: &mut ConsoleContext| &mut ctx.wasi)
             .with_context(|| format!("Setting up WASI for console handler {}", name))?;
+        crate::services::random_thing::add_to_linker(&mut linker, |ctx| &mut ctx.random_thing)
+            .with_context(|| format!("Setting up services [RandomThing] for console handler {}", name))?;
         let module = Module::new(&engine, &self.wasm)
             .with_context(|| format!("Creating Wasm module for console handler {}", name))?;
         let instance = linker
