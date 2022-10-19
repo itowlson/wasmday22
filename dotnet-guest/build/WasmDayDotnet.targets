@@ -1,12 +1,17 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<ItemGroup>
+		<!-- interop helpers -->
 		<WasiNativeFileReference Include="$(MSBuildThisFileDirectory)..\native\console-export.c" />
+		<WasiNativeFileReference Include="$(MSBuildThisFileDirectory)..\native\host-components.c" />
 
+		<!-- wit-bindgen auto files -->
 		<WasiNativeFileReference Include="$(MSBuildThisFileDirectory)..\native\console.c" />
+		<WasiNativeFileReference Include="$(MSBuildThisFileDirectory)..\native\random-thing.c" />
+
 		<WasiNativeFileReference Include="$(MSBuildThisFileDirectory)..\native\util.c" />
 
-		<!-- <WasiAfterRuntimeLoaded Include="attach_internal_calls" /> -->
+		<WasiAfterRuntimeLoaded Include="attach_internal_calls" />
 	</ItemGroup>
 
 	<!-- Wizer is only enabled if the developer explicitly opts in, because it will only work if they have the wizer binary on PATH -->
